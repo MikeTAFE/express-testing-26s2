@@ -40,6 +40,42 @@ app.get('/json-data', (req, res) => {
     res.send(data);
 });
 
+// GET /countries/au
+// This endpoint/route takes a named parameter, which is used inside the handler
+app.get('/countries/:code', (req, res) => {
+
+    // Get parameters
+    const countryCode = req.params.code.toLowerCase();
+
+    // TODO: validation?
+
+    // TESTING
+    // console.log({countryCode});
+
+    // Country list (defined as object/map)
+    const countries = {
+        au: "Australia",
+        nz: "New Zealand",
+        cn: "China",
+        ch: "Switzerland",
+        at: "Austria",
+        kr: "Korea",
+    };
+
+    // Check if country code not found
+    if (!Object.hasOwn(countries, countryCode)) {
+        res.status(404).send({message: `Country with code '${countryCode.toUpperCase()}' not found`});
+    }
+
+    // Send country data (JSON)
+    // Get country name from the list
+    res.status(200).send({
+        code: countryCode,
+        name: countries[countryCode],
+    });
+});
+
+
 // Start the Express web server listening (waiting for connections)
 app.listen(port, () => {
     console.log(`Testing Express App is listening on port ${port}`);
