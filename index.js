@@ -8,6 +8,9 @@ const express = require('express');
 const app = express();
 const port = 3000;
 
+// Require Mongoose package
+const mongoose = require('mongoose');
+
 // GET /
 app.get('/', (req, res) => {
     // This is a simple text string
@@ -76,7 +79,22 @@ app.get('/countries/:code', (req, res) => {
 });
 
 
-// Start the Express web server listening (waiting for connections)
-app.listen(port, () => {
-    console.log(`Testing Express App is listening on port ${port}`);
-});
+
+// async wrapper function
+async function main() {
+
+    // Connect to MongoDB instance/database
+    await mongoose.connect('mongodb://localhost:27017/test');
+
+    // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
+
+    console.log("Connected to MongoDB database");
+
+    // Start the Express web server listening (waiting for connections)
+    app.listen(port, () => {
+        console.log(`Testing Express App is listening on port ${port}`);
+    });
+}
+
+// Run the main function, catch any DB errors
+main().catch(err => console.log(err));
