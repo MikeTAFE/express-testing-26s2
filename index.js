@@ -75,7 +75,7 @@ app.get('/countries/:code', (req, res) => {
 
     // Check if country code not found
     if (!Object.hasOwn(countries, countryCode)) {
-        res.status(404).send({message: `Country with code '${countryCode.toUpperCase()}' not found`});
+        return res.status(404).send({message: `Country with code '${countryCode.toUpperCase()}' not found`});
     }
 
     // Send country data (JSON)
@@ -98,7 +98,7 @@ app.get('/api/countries', async (req, res) => {
     // Find all countries with projection and sorting
     // .lean() returns plain old JavaScript objects (POJOs) instead of heavy Mongoose Document objects
     const countries = await Country.find()
-        .select({_id: 0})
+        .select({_id: 0, __v: 0})
         .sort({code: 1})
         .lean();
     
@@ -122,6 +122,26 @@ app.post('/api/countries', async (req, res) => {
     
     // Send response (201 = Created)
     res.status(201).send(country);
+});
+
+// GET /api/countries/:code
+app.get('/api/countries/:code', async (req, res) => {
+    
+    // Get parameters
+    const countryCode = req.params.code;
+
+    // Find matching country
+    const country = await Country.findOne({code: countryCode})
+        .select({_id: 0, __v: 0})
+        .lean();
+    
+    // Check if country found
+    if (country == null) {
+        return res.status(404).send({message: "Country not found"});
+    }
+
+    // Send response
+    res.status(200).send(country);
 });
 
 
