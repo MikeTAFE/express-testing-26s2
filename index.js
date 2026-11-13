@@ -109,19 +109,29 @@ app.get('/api/countries', async (req, res) => {
 // POST /api/countries
 app.post('/api/countries', async (req, res) => {
     
-    // TODO: validation...
+    try {
+        // Build a new object
+        const country = new Country({
+            code: req.body?.code,
+            name: req.body?.name,
+        });
 
-    // Build a new object
-    const country = new Country({
-        code: req.body.code,
-        name: req.body.name,
-    });
-
-    // Add/save to database (insert)
-    country.save();
-    
-    // Send response (201 = Created)
-    res.status(201).send(country);
+        // Add/save to database (insert) with schema validation
+        await country.save();
+        
+        // Send response (201 = Created)
+        res.status(201).send(country);
+    } catch (err) {
+        // Handle Mongoose schema validation errors
+        if (err.name === 'ValidationError') {
+            return res.status(400).send({ message: err.message });
+        }
+        // Handle duplicate key error (code already exists)
+        if (err.code === 11000) {
+            return res.status(409).send({ message: "Country with this code already exists" });
+        }
+        res.status(500).send({ message: err.message });
+    }
 });
 
 // GET /api/countries/:code
