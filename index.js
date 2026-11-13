@@ -154,6 +154,50 @@ app.get('/api/countries/:code', async (req, res) => {
     res.status(200).send(country);
 });
 
+// PUT /api/countries/:code (Replace)
+app.put('/api/countries/:code', async (req, res) => {
+
+    try {
+        // Get parameters
+        const countryCode = req.params.code;
+
+        // Check if code in body matches URL parameter
+        if (req.body?.code !== undefined && req.body.code !== countryCode) {
+            return res.status(400).send({ message: "Country code in body does not match URL parameter" });
+        }
+
+        // Validate complete document against Country schema
+        const countryDoc = new Country({
+            code: countryCode,
+            name: req.body?.name,
+        });
+        await countryDoc.validate();
+
+        // Replace matching document with new data
+        const country = await Country.findOneAndReplace(
+            { code: countryCode },
+            { code: countryCode, name: req.body.name },
+            { returnDocument: 'after', runValidators: true }
+        )
+            .select({ _id: 0, __v: 0 })
+            .lean();
+
+        // Check if country found
+        if (country == null) {
+            return res.status(404).send({ message: "Country not found" });
+        }
+
+        // Send response
+        res.status(200).send(country);
+    } catch (err) {
+        // Handle Mongoose schema validation errors
+        if (err.name === 'ValidationError') {
+            return res.status(400).send({ message: err.message });
+        }
+        res.status(500).send({ message: err.message });
+    }
+});
+
 
 
 // async wrapper function
