@@ -242,6 +242,33 @@ app.patch('/api/countries/:code', async (req, res) => {
     }
 });
 
+// DELETE /api/countries/:code
+app.delete('/api/countries/:code', async (req, res) => {
+
+    try {
+        // Get parameters
+        const countryCode = req.params.code;
+
+        // Check if code in body matches URL parameter
+        if (req.body?.code !== undefined && req.body.code !== countryCode) {
+            return res.status(400).send({ message: "Country code in body does not match URL parameter" });
+        }
+
+        // Find and remove matching country
+        const country = await Country.findOneAndDelete({ code: countryCode });
+
+        // Check if country found
+        if (country == null) {
+            return res.status(404).send({ message: "Country not found" });
+        }
+
+        // Send response (204 No Content)
+        res.status(204).send();
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+    }
+});
+
 
 
 // async wrapper function
